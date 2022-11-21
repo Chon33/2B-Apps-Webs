@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Deleted</title>
+</head>
+<body>
+    <?php
+        // Guardar las variables del form
+        $user = strtolower($_POST["user"]);
+        $pass = $_POST["pass"];
+
+        // Si se ha introducido un usuario
+        if ($user) {
+            // Conectar a la base de datos
+            $conn = mysqli_connect("localhost", "root", "", "instituto");
+
+            // Pedimos info a la base de datos
+            $sql = "SELECT username,passwd FROM portal";
+            $res = mysqli_query($conn, $sql);
+
+            // Si la base devuelve la informacion
+            if ($res) {
+                $user_ok = false;
+
+                // Mirar en cada fila si el usuario coincide con el introducido
+                while ($fila = mysqli_fetch_assoc($res)) {
+                    // Si coincide...
+                    if ($user == $fila['username']) {
+                        $user_ok = true; // lo hemos encontrado
+
+                        // ...entonces miramos la contraseña, para no hacerlo cada vez
+                        if (password_verify($pass, $fila['passwd'])) {
+                            // Si la contraseña es correcta...
+                            $sql = "DELETE from portal WHERE username='$user'";
+                            $res = mysqli_query($conn, $sql); // borramos el usuario
+                            
+                            if ($res)
+                                print("<h1>@" . ucfirst($user) . " a sido eliminadx de la base de datos</h1>");
+                            else
+                                print "<h1>Algo ha salido mal...</h1>";
+                        } 
+                        // Si la contraesña esta mal
+                        else {
+                            echo "<h1>Contraseña incorrecta!</h1>";
+                        }
+
+                        break; // no seguimos mirando más usuarios
+                    }
+                }
+
+                // Si salimos del bucle sin que coincida ningun usuario
+                if (!$user_ok) {
+                    echo "<h1>No se ha encontrado el usuario!</h1>";
+                }
+
+            } else {
+                print "<h1>Algo ha salido mal...</h1>";
+            }
+
+            mysqli_close($conn);
+        } else {
+            echo "<h3 class='error'>Necesitas un nombre de usuario</h3>";
+        }
+    ?>
+</body>
+</html>
